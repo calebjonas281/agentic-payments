@@ -19,7 +19,16 @@ from backend.budget import (
     get_per_tx_limit,
     get_remaining_budget,
 )
-from backend.db import close_db, get_db, get_transactions, set_setting
+from backend.db import (
+    close_db,
+    get_db,
+    get_last_session_id,
+    get_session_messages,
+    get_transactions,
+    list_sessions,
+    save_message,
+    set_setting,
+)
 from backend.l402 import L402Error, create_receive_invoice, get_wallet_balance
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -57,38 +66,53 @@ class AgentRequest(BaseModel):
     session_id: str | None = None
 
 
-# In-memory conversation store (session_id → message history)
-_conversations: dict[str, list[dict]] = {}
-_MAX_HISTORY = 20  # keep last N exchanges to avoid context blowup
-
-
 @app.post("/agent")
 async def agent_endpoint(req: AgentRequest):
-    """Stream agent responses as SSE events with conversation memory."""
+    """Stream agent responses as SSE events with persistent conversation memory."""
     sid = req.session_id or "default"
 
-    # Get or create conversation history
-    history = _conversations.setdefault(sid, [])
+    # Load history from DB
+    history = await get_session_messages(sid)
 
-    # Add user message to history
-    history.append({"role": "user", "content": req.query})
+    # Persist the user message
+    await save_message(sid, "user", req.query)
 
     async def event_generator():
         assistant_text = ""
-        async for event in run_agent(req.query, history=history[:-1]):
+        async for event in run_agent(req.query, history=history):
             if event.event == "result":
                 assistant_text = event.data.get("text", "")
             yield {"event": event.event, "data": json.dumps(event.data)}
 
-        # Save assistant response to history
+        # Persist the assistant response
         if assistant_text:
-            history.append({"role": "assistant", "content": assistant_text})
-
-        # Trim history to avoid unbounded growth
-        while len(history) > _MAX_HISTORY * 2:
-            history.pop(0)
+            await save_message(sid, "assistant", assistant_text)
 
     return EventSourceResponse(event_generator())
+
+
+@app.get("/session/last")
+async def last_session_endpoint():
+    """Return the most recently active session ID and its messages."""
+    sid = await get_last_session_id()
+    if not sid:
+        return {"session_id": None, "messages": []}
+    messages = await get_session_messages(sid)
+    return {"session_id": sid, "messages": messages}
+
+
+@app.get("/sessions")
+async def sessions_list_endpoint():
+    """List all past sessions."""
+    sessions = await list_sessions()
+    return {"sessions": sessions}
+
+
+@app.get("/session/{session_id}")
+async def session_endpoint(session_id: str):
+    """Return messages for a specific session."""
+    messages = await get_session_messages(session_id)
+    return {"session_id": session_id, "messages": messages}
 
 
 @app.get("/budget")
@@ -158,10 +182,13 @@ async def update_budget_settings(req: BudgetSettingsRequest):
     return await get_budget_settings()
 
 
-_INDEX_HTML = (_FRONTEND_DIR / "index.html").read_text()
-
-
 @app.get("/")
 async def index():
     """Serve the frontend."""
-    return HTMLResponse(_INDEX_HTML)
+    return HTMLResponse((_FRONTEND_DIR / "index.html").read_text())
+
+
+@app.get("/audit")
+async def audit():
+    """Serve the audit log page."""
+    return HTMLResponse((_FRONTEND_DIR / "audit.html").read_text())

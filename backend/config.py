@@ -25,6 +25,18 @@ MDK_CMD: list[str] = os.environ.get(
     "AP_MDK_CMD", "npx @moneydevkit/agent-wallet@latest"
 ).split()
 
+# Demo mode — simulate a funded wallet without real Lightning
+DEMO_MODE: bool = os.environ.get("AP_DEMO_MODE", "true").lower() in ("1", "true", "yes")
+DEMO_BALANCE_SATS: int = int(os.environ.get("AP_DEMO_BALANCE_SATS", "50000"))
+
 # Vendor blocklist — comma-separated domains the agent must never pay
 _blocklist_raw = os.environ.get("AP_VENDOR_BLOCKLIST", "")
 VENDOR_BLOCKLIST: set[str] = {d.strip() for d in _blocklist_raw.split(",") if d.strip()}
+
+# Amadeus flight API (https://developers.amadeus.com — free self-service tier)
+AMADEUS_CLIENT_ID = os.environ.get("AMADEUS_CLIENT_ID", "")
+AMADEUS_CLIENT_SECRET = os.environ.get("AMADEUS_CLIENT_SECRET", "")
+AMADEUS_BASE_URL = os.environ.get("AMADEUS_BASE_URL", "https://test.api.amadeus.com")
+
+# SerpAPI — Google Flights scraper (https://serpapi.com — 100 free searches/month)
+SERPAPI_KEY = os.environ.get("SERPAPI_KEY", "")

@@ -19,17 +19,17 @@ class BudgetExceeded(Exception):
         self.limit = limit
         remaining = max(0, limit - spent)
         super().__init__(
-            f"Budget exceeded: requested {requested} sats, "
-            f"already spent {spent}/{limit} sats today "
-            f"({remaining} sats remaining)"
+            f"Over daily budget — this purchase costs {requested:,} sats but only "
+            f"{remaining:,} sats remain today (spent {spent:,} of {limit:,} sats). "
+            f"Add funds to the wallet or raise the daily budget in wallet settings."
         )
 
 
 class PurchaseTooLarge(Exception):
     def __init__(self, requested: int, limit: int) -> None:
         super().__init__(
-            f"Single purchase of {requested} sats exceeds per-transaction "
-            f"limit of {limit} sats"
+            f"Purchase too large — {requested:,} sats exceeds the single-purchase "
+            f"limit of {limit:,} sats. Raise the per-purchase cap in wallet settings."
         )
 
 

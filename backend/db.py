@@ -54,6 +54,19 @@ async def _init_schema(db: aiosqlite.Connection) -> None:
             value TEXT NOT NULL
         )
     """)
+    await db.execute("""
+        CREATE TABLE IF NOT EXISTS messages (
+            id         INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id TEXT    NOT NULL,
+            role       TEXT    NOT NULL CHECK (role IN ('user', 'assistant')),
+            content    TEXT    NOT NULL,
+            created_at TEXT    NOT NULL DEFAULT (datetime('now'))
+        )
+    """)
+    await db.execute("""
+        CREATE INDEX IF NOT EXISTS idx_messages_session
+        ON messages (session_id, id)
+    """)
     await db.commit()
 
 
@@ -188,6 +201,61 @@ async def check_budget_and_reserve(
         raise
 
     return daily_limit - spent - amount_sats
+
+
+async def save_message(session_id: str, role: str, content: str) -> None:
+    db = await get_db()
+    await db.execute(
+        "INSERT INTO messages (session_id, role, content) VALUES (?, ?, ?)",
+        (session_id, role, content),
+    )
+    await db.commit()
+
+
+async def get_session_messages(session_id: str, limit: int = 40) -> list[dict]:
+    """Return the last N messages for a session, oldest first."""
+    db = await get_db()
+    rows = await db.execute_fetchall(
+        """
+        SELECT role, content FROM messages
+        WHERE session_id = ?
+        ORDER BY id DESC LIMIT ?
+        """,
+        (session_id, limit),
+    )
+    return [{"role": r["role"], "content": r["content"]} for r in reversed(rows)]
+
+
+async def get_last_session_id() -> str | None:
+    """Return the most recently active session ID."""
+    db = await get_db()
+    rows = await db.execute_fetchall(
+        "SELECT session_id FROM messages ORDER BY id DESC LIMIT 1"
+    )
+    return rows[0]["session_id"] if rows else None
+
+
+async def list_sessions(limit: int = 50) -> list[dict]:
+    """Return all sessions ordered by most recent activity.
+
+    Each entry has: session_id, title (first user message), updated_at.
+    """
+    db = await get_db()
+    rows = await db.execute_fetchall(
+        """
+        SELECT
+            session_id,
+            MIN(CASE WHEN role = 'user' THEN content END) AS title,
+            MAX(created_at) AS updated_at,
+            COUNT(*) AS message_count
+        FROM messages
+        GROUP BY session_id
+        ORDER BY updated_at DESC
+        LIMIT ?
+        """,
+        (limit,),
+    )
+    return [dict(r) for r in rows]
 
 
 async def get_transactions(limit: int = 50) -> list[dict]:

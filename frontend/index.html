@@ -63,18 +63,147 @@
     }
 
     header h1::before {
-      content: '';
-      width: 11px;
-      height: 11px;
-      border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 0 5px var(--accent-soft);
+      display: none;
     }
 
-    .header-actions {
+    /* ---- Hamburger menu button ---- */
+    #menu-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
       display: flex;
-      gap: 10px;
+      flex-direction: column;
+      gap: 5px;
+      padding: 6px;
+      border-radius: 8px;
+      transition: background 0.15s;
+    }
+
+    #menu-btn:hover { background: var(--panel-strong); }
+
+    #menu-btn span {
+      display: block;
+      width: 20px;
+      height: 2px;
+      background: var(--text-muted);
+      border-radius: 2px;
+      transition: background 0.15s;
+    }
+
+    #menu-btn:hover span { background: var(--text); }
+
+    /* ---- Left menu sidebar ---- */
+    #menu-sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: 240px;
+      background: var(--panel);
+      border-right: 1px solid var(--border);
+      z-index: 260;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(-100%);
+      transition: transform 0.22s cubic-bezier(0.4,0,0.2,1);
+      box-shadow: 4px 0 24px rgba(0,0,0,0.28);
+    }
+
+    #menu-sidebar.open { transform: translateX(0); }
+
+    #menu-sidebar-header {
+      padding: 18px 16px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
       align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    #menu-title {
+      font-size: 15px;
+      font-weight: 750;
+      color: var(--text);
+    }
+
+    #menu-close-btn {
+      background: none;
+      border: none;
+      color: var(--text-faint);
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+      padding: 2px 4px;
+    }
+
+    #menu-close-btn:hover { color: var(--text); }
+
+    #menu-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 0 24px;
+    }
+
+    .menu-section-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 0 16px;
+      margin: 12px 0 6px;
+    }
+
+    .menu-divider {
+      height: 1px;
+      background: var(--border-soft);
+      margin: 10px 16px;
+    }
+
+    .menu-item {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: none;
+      border: none;
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--text-muted);
+      padding: 10px 16px;
+      cursor: pointer;
+      border-radius: 0;
+      transition: background 0.12s, color 0.12s;
+    }
+
+    .menu-item:hover {
+      background: var(--panel-strong);
+      color: var(--text);
+    }
+
+    .menu-item.accent {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .menu-item.accent:hover { color: var(--accent-strong); }
+
+    .menu-budget-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 16px 10px;
+      gap: 8px;
+    }
+
+    .menu-budget-label {
+      font-size: 12px;
+      color: var(--text-faint);
+    }
+
+    .menu-budget-amount {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--green);
     }
 
     .budget-badge {
@@ -128,36 +257,27 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .event.step::before {
-      display: none;
-    }
-
-    .event.step::after {
-      display: none;
-    }
-
-    .event.step.done::after {
-      display: none;
-    }
-
-    .event.step {
-      width: fit-content;
-      max-width: min(680px, 88%);
-      margin: 0 0 10px 86px;
-      padding: 0;
-      color: var(--text-muted);
-      background: transparent;
-      border: 0;
-      border-radius: 0;
-    }
-
-    .event.step.quiet {
+    /* ---- Thinking indicator ---- */
+    .thinking-indicator {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0 6px 86px;
       color: var(--text-faint);
+      font-size: 13px;
+      animation: fadeIn 0.2s ease;
     }
 
-    .event-text {
-      display: inline;
-      color: var(--text-faint);
+    .thinking-logo {
+      width: 22px;
+      height: 22px;
+      flex-shrink: 0;
+      animation: thinkPulse 1.4s ease-in-out infinite;
+    }
+
+    @keyframes thinkPulse {
+      0%, 100% { opacity: 0.5; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1); }
     }
 
     .event.user {
@@ -190,7 +310,6 @@
       background: transparent;
       border: 0;
       border-radius: 0;
-      white-space: pre-wrap;
       word-wrap: break-word;
       animation: fadeIn 0.4s ease;
       box-shadow: none;
@@ -203,55 +322,161 @@
       font-size: 12px;
       font-weight: 750;
       line-height: 1;
-      margin-bottom: 8px;
-      text-transform: none;
+      margin-bottom: 12px;
     }
 
-    .event.result h2,
+    .event.result h1 {
+      color: var(--text);
+      font-size: 22px;
+      font-weight: 800;
+      line-height: 1.25;
+      margin: 22px 0 12px;
+    }
+
+    .event.result h2 {
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 760;
+      line-height: 1.3;
+      margin: 20px 0 10px;
+    }
+
     .event.result h3 {
       color: var(--text);
-      font-size: 19px;
+      font-size: 15px;
+      font-weight: 700;
       line-height: 1.35;
-      margin: 18px 0 10px;
-      font-weight: 760;
+      margin: 16px 0 8px;
     }
 
+    .event.result h1:first-child,
     .event.result h2:first-child,
-    .event.result h3:first-child {
-      margin-top: 0;
-    }
+    .event.result h3:first-child { margin-top: 0; }
 
     .event.result p {
-      margin: 0 0 14px;
+      margin: 0 0 12px;
     }
 
-    .event.result ul {
+    .event.result p:last-child { margin-bottom: 0; }
+
+    .event.result ul,
+    .event.result ol {
       list-style: none;
-      margin: 8px 0 20px;
+      margin: 4px 0 16px;
       padding: 0;
     }
 
     .event.result li {
       position: relative;
-      margin: 7px 0;
-      padding-left: 18px;
+      margin: 6px 0;
+      padding-left: 22px;
+      line-height: 1.6;
     }
 
-    .event.result li::before {
+    .event.result ul > li::before {
       content: '';
       position: absolute;
-      left: 0;
-      top: 0.72em;
+      left: 2px;
+      top: 0.68em;
       width: 5px;
       height: 5px;
       border-radius: 50%;
       background: var(--accent);
     }
 
+    .event.result ol > li::before {
+      content: attr(data-n) '.';
+      position: absolute;
+      left: 0;
+      top: 0;
+      font-weight: 700;
+      color: var(--accent);
+      font-size: 13px;
+      min-width: 18px;
+    }
+
     .event.result strong {
       color: var(--text);
-      font-weight: 760;
+      font-weight: 700;
     }
+
+    .event.result em {
+      font-style: italic;
+      color: var(--text);
+    }
+
+    .event.result a {
+      color: var(--accent-strong);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      text-decoration-thickness: 1px;
+    }
+
+    .event.result a:hover { opacity: 0.8; }
+
+    .event.result code {
+      font-family: "SF Mono", "Fira Code", Consolas, monospace;
+      font-size: 13px;
+      background: var(--panel-strong);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 5px;
+      color: var(--accent-strong);
+    }
+
+    .event.result pre {
+      background: var(--panel-strong);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin: 10px 0 16px;
+      overflow-x: auto;
+    }
+
+    .event.result pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .event.result blockquote {
+      border-left: 3px solid var(--accent);
+      margin: 10px 0 16px;
+      padding: 4px 0 4px 16px;
+      color: var(--text-muted);
+    }
+
+    .event.result hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 18px 0;
+    }
+
+    .event.result table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0 16px;
+      font-size: 14px;
+    }
+
+    .event.result th {
+      text-align: left;
+      padding: 8px 12px;
+      border-bottom: 2px solid var(--border);
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .event.result td {
+      padding: 7px 12px;
+      border-bottom: 1px solid var(--border-soft);
+      color: var(--text-muted);
+    }
+
+    .event.result tr:last-child td { border-bottom: none; }
 
     .event.error {
       color: var(--red);
@@ -295,81 +520,6 @@
 
     .empty-state p {
       display: none;
-    }
-
-    .thinking-symbol {
-      width: 142px;
-      height: 118px;
-      margin: 0 auto;
-      overflow: visible;
-    }
-
-    .thinking-symbol .node {
-      fill: transparent;
-      stroke: var(--text);
-      stroke-width: 3;
-      opacity: 0.92;
-    }
-
-    .thinking-symbol .node.active {
-      fill: #78bd47;
-      stroke: #78bd47;
-    }
-
-    .thinking-symbol .edge {
-      stroke: #516782;
-      stroke-width: 1.6;
-      opacity: 0.8;
-    }
-
-    .thinking-symbol .edge.active {
-      stroke: #78bd47;
-      stroke-width: 3.6;
-      opacity: 1;
-      stroke-dasharray: 190;
-      stroke-dashoffset: 190;
-      animation: thinkPath 1.55s ease-in-out infinite;
-    }
-
-    .thinking-symbol.compact {
-      width: 31px;
-      height: 25px;
-      margin: 0 8px 0 0;
-      vertical-align: -7px;
-    }
-
-    .thinking-symbol.compact .node {
-      stroke-width: 5;
-    }
-
-    .thinking-symbol.compact .edge {
-      stroke-width: 3;
-    }
-
-    .thinking-symbol.compact .edge.active {
-      stroke-width: 6;
-    }
-
-    @keyframes thinkPath {
-      0% { stroke-dashoffset: 190; }
-      48% { stroke-dashoffset: 0; }
-      100% { stroke-dashoffset: -190; }
-    }
-
-    .spinner {
-      display: inline-block;
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--accent);
-      animation: pulse 1s ease-in-out infinite;
-      margin-right: 8px;
-      vertical-align: middle;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 0.3; }
-      50% { opacity: 1; }
     }
 
     #input-area {
@@ -455,11 +605,6 @@
         padding: 0 0 8vh;
       }
 
-      .thinking-symbol {
-        width: 118px;
-        height: 98px;
-      }
-
       #input-area {
         padding: 8px;
       }
@@ -521,6 +666,8 @@
       padding: 28px;
       width: 380px;
       max-width: 90vw;
+      max-height: 90vh;
+      overflow-y: auto;
       box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
       animation: fadeIn 0.2s ease;
     }
@@ -630,29 +777,32 @@
       border-color: var(--green);
     }
 
-    .invoice-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--accent-strong);
-      text-decoration: none;
-      font-weight: 700;
-      font-size: 13px;
-      word-break: normal;
-    }
-
-    .invoice-link::before {
-      content: 'Open invoice in wallet';
+    .copy-invoice-btn {
+      display: block;
+      width: 100%;
+      background: var(--panel-strong);
+      border: 1px solid var(--border);
       color: var(--text);
+      font-family: inherit;
       font-size: 13px;
       font-weight: 700;
+      padding: 10px 16px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+      text-align: center;
+      margin-bottom: 10px;
     }
 
-    .invoice-copy-hint {
-      margin-top: 8px;
-      font-size: 11px;
-      color: var(--text-faint);
-      text-align: left;
+    .copy-invoice-btn:hover {
+      background: var(--surface);
+      border-color: var(--accent);
+      color: var(--accent-strong);
+    }
+
+    .copy-invoice-btn.copied {
+      border-color: var(--green);
+      color: var(--green);
     }
 
     .modal-footer {
@@ -680,6 +830,543 @@
       color: var(--green);
       font-weight: 700;
     }
+
+    /* ---- History sidebar ---- */
+    #history-sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: 260px;
+      background: var(--panel);
+      border-right: 1px solid var(--border);
+      z-index: 250;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(-100%);
+      transition: transform 0.22s cubic-bezier(0.4,0,0.2,1);
+      box-shadow: 4px 0 24px rgba(0,0,0,0.28);
+    }
+
+    #history-sidebar.open {
+      transform: translateX(0);
+    }
+
+    #history-sidebar-header {
+      padding: 18px 16px 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    #history-sidebar-header h3 {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    #history-close-btn {
+      background: none;
+      border: none;
+      color: var(--text-faint);
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+      padding: 2px 4px;
+    }
+
+    #history-close-btn:hover { color: var(--text); }
+
+    #history-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 0;
+      scrollbar-color: var(--border) transparent;
+    }
+
+    .history-item {
+      padding: 10px 16px;
+      cursor: pointer;
+      border-radius: 0;
+      transition: background 0.12s;
+      border-left: 2px solid transparent;
+    }
+
+    .history-item:hover {
+      background: var(--panel-strong);
+    }
+
+    .history-item.active {
+      border-left-color: var(--accent);
+      background: var(--panel-strong);
+    }
+
+    .history-item-title {
+      font-size: 13px;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 3px;
+    }
+
+    .history-item-date {
+      font-size: 11px;
+      color: var(--text-faint);
+    }
+
+    #history-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 249;
+      background: rgba(0,0,0,0.3);
+    }
+
+    #history-overlay.open { display: block; }
+
+    /* ---- Audit sidebar ---- */
+    #audit-sidebar {
+      position: fixed;
+      top: 0;
+      right: 0;
+      height: 100vh;
+      width: 420px;
+      max-width: 92vw;
+      background: var(--panel);
+      border-left: 1px solid var(--border);
+      z-index: 250;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.22s cubic-bezier(0.4,0,0.2,1);
+      box-shadow: -4px 0 24px rgba(0,0,0,0.28);
+    }
+
+    #audit-sidebar.open { transform: translateX(0); }
+
+    #audit-sidebar-header {
+      padding: 18px 16px 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    #audit-sidebar-header h3 {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    #audit-close-btn {
+      background: none;
+      border: none;
+      color: var(--text-faint);
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+      padding: 2px 4px;
+    }
+
+    #audit-close-btn:hover { color: var(--text); }
+
+    #audit-stats {
+      display: flex;
+      gap: 10px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .audit-stat {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+
+    .audit-stat-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 4px;
+    }
+
+    .audit-stat-value {
+      font-size: 16px;
+      font-weight: 750;
+      color: var(--text);
+    }
+
+    .audit-stat-value.green { color: var(--green); }
+    .audit-stat-value.accent { color: var(--accent-strong); }
+
+    #audit-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 0;
+      scrollbar-color: var(--border) transparent;
+    }
+
+    .audit-item {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border-soft);
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .audit-item:last-child { border-bottom: none; }
+
+    .audit-item-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .audit-item-vendor {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .audit-item-amount {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent-strong);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .audit-item-amount.dash { color: var(--text-faint); font-weight: 400; }
+
+    .audit-item-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .audit-item-url {
+      font-size: 11px;
+      color: var(--text-faint);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .audit-item-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .audit-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+
+    .audit-badge.completed { background: var(--green-soft); color: var(--green); }
+    .audit-badge.pending   { background: rgba(244,183,64,0.15); color: #f4b740; }
+    .audit-badge.failed    { background: var(--red-soft); color: var(--red); }
+    .audit-badge.reserved  { background: var(--blue-soft); color: var(--blue); }
+
+    .audit-item-time {
+      font-size: 10px;
+      color: var(--text-faint);
+    }
+
+    /* ---- Agent form ---- */
+    .agent-form {
+      margin: 14px 0 8px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    .agent-form-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 14px 18px 10px;
+      border-bottom: 1px solid var(--border-soft);
+    }
+
+    .agent-form-body {
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .agent-form-field label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .chips-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      padding: 7px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.12s, border-color 0.12s, color 0.12s;
+      font-family: inherit;
+    }
+
+    .chip:hover {
+      border-color: var(--accent);
+      color: var(--text);
+    }
+
+    .chip.selected {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: var(--accent-strong);
+      font-weight: 650;
+    }
+
+    .agent-form-field input[type="text"],
+    .agent-form-field textarea {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      outline: none;
+      resize: vertical;
+      transition: border-color 0.15s;
+    }
+
+    .agent-form-field input[type="text"]:focus,
+    .agent-form-field textarea:focus {
+      border-color: var(--accent);
+    }
+
+    .agent-form-field input[type="text"]::placeholder,
+    .agent-form-field textarea::placeholder {
+      color: var(--text-faint);
+    }
+
+    .agent-form-field textarea {
+      min-height: 80px;
+    }
+
+    /* ---- Card option picker ---- */
+    .card-options {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .option-card {
+      width: 148px;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color 0.15s, transform 0.12s;
+      user-select: none;
+    }
+
+    .option-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .option-card.selected {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .option-card-img {
+      width: 100%;
+      height: 120px;
+      object-fit: contain;
+      background: #fff;
+      display: block;
+    }
+
+    .option-card-img-placeholder {
+      width: 100%;
+      height: 120px;
+      background: var(--panel-strong);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+    }
+
+    .option-card-body {
+      padding: 8px 10px 10px;
+    }
+
+    .option-card-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-bottom: 3px;
+    }
+
+    .option-card-sublabel {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .agent-form-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 12px 18px 16px;
+      border-top: 1px solid var(--border-soft);
+    }
+
+    .form-skip-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 9px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .form-skip-btn:hover { color: var(--text); border-color: var(--text-muted); }
+
+    .form-submit-btn {
+      background: var(--accent);
+      border: none;
+      color: #fff;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 9px 22px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+
+    .form-submit-btn:hover { opacity: 0.9; }
+    .form-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .agent-form.submitted {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    /* ---- No-balance warning bar ---- */
+    #no-balance-bar {
+      display: none;
+      position: fixed;
+      bottom: 24px;
+      right: 16px;
+      z-index: 300;
+      background: var(--panel);
+      border: 1px solid rgba(239, 123, 138, 0.5);
+      border-radius: 10px;
+      padding: 10px 14px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+      animation: fadeIn 0.25s ease;
+      min-width: 210px;
+      max-width: 260px;
+    }
+
+    #no-balance-bar.visible { display: block; }
+
+    #no-balance-bar-inner {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    #no-balance-bar-icon {
+      font-size: 16px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    #no-balance-bar-text {
+      flex: 1;
+    }
+
+    #no-balance-bar-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--red);
+      margin-bottom: 2px;
+    }
+
+    #no-balance-bar-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    #no-balance-bar-sub:hover { color: var(--accent-strong); }
+
+    #no-balance-bar-close {
+      background: none;
+      border: none;
+      color: var(--text-faint);
+      font-size: 14px;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    #no-balance-bar-close:hover { color: var(--text); }
 
     /* ---- Bird animation ---- */
     .bird-container {
@@ -748,13 +1435,79 @@
   </style>
 </head>
 <body>
+  <div id="history-overlay"></div>
+
+  <!-- Left menu panel -->
+  <div id="menu-sidebar">
+    <div id="menu-sidebar-header">
+      <span id="menu-title">Mintty</span>
+      <button id="menu-close-btn">✕</button>
+    </div>
+    <div id="menu-body">
+      <div class="menu-section-label">Budget</div>
+      <div class="menu-budget-row">
+        <span class="menu-budget-label">Remaining today</span>
+        <span class="menu-budget-amount" id="menu-budget">... sats</span>
+      </div>
+      <button class="menu-item accent" id="fund-btn">Fund Wallet</button>
+
+      <div class="menu-divider"></div>
+      <div class="menu-section-label">Navigation</div>
+      <button class="menu-item" id="new-chat-btn">New Chat</button>
+      <button class="menu-item" id="history-btn">History</button>
+      <button class="menu-item" id="audit-btn">Audit Log</button>
+
+      <div class="menu-divider"></div>
+      <div class="menu-section-label">Display</div>
+      <button class="menu-item" id="toggle-steps-btn">Hide Steps</button>
+    </div>
+  </div>
+
+  <div id="audit-sidebar">
+    <div id="audit-sidebar-header">
+      <h3>Audit Log</h3>
+      <button id="audit-close-btn">✕</button>
+    </div>
+    <div id="audit-stats">
+      <div class="audit-stat">
+        <div class="audit-stat-label">Spent Today</div>
+        <div class="audit-stat-value accent" id="audit-stat-spent">—</div>
+      </div>
+      <div class="audit-stat">
+        <div class="audit-stat-label">Paid</div>
+        <div class="audit-stat-value green" id="audit-stat-paid">—</div>
+      </div>
+      <div class="audit-stat">
+        <div class="audit-stat-label">Total</div>
+        <div class="audit-stat-value" id="audit-stat-total">—</div>
+      </div>
+    </div>
+    <div id="audit-list"><div style="padding:16px;color:var(--text-faint);font-size:13px;">Loading...</div></div>
+  </div>
+  <div id="history-sidebar">
+    <div id="history-sidebar-header">
+      <h3>History</h3>
+      <button id="history-close-btn">✕</button>
+    </div>
+    <div id="history-list"></div>
+  </div>
+
+  <div id="no-balance-bar">
+    <div id="no-balance-bar-inner">
+      <div id="no-balance-bar-icon">⚠️</div>
+      <div id="no-balance-bar-text">
+        <div id="no-balance-bar-title">No Bitcoin in wallet</div>
+        <div id="no-balance-bar-sub">Fund wallet to enable payments</div>
+      </div>
+      <button id="no-balance-bar-close">✕</button>
+    </div>
+  </div>
+
   <header>
     <h1>Mintty</h1>
-    <div class="header-actions">
-      <button class="wallet-btn" id="new-chat-btn" style="background:transparent;border-color:var(--border);color:var(--text-muted);">New Chat</button>
-      <div class="budget-badge">budget: <span class="amount" id="budget">...</span> sats</div>
-      <button class="wallet-btn" id="fund-btn">Fund Wallet</button>
-    </div>
+    <button id="menu-btn" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
   </header>
 
   <!-- Wallet funding modal -->
@@ -768,11 +1521,15 @@
         <button class="modal-btn" id="generate-btn">Generate</button>
       </div>
       <div id="invoice-area">
-        <canvas id="qr-canvas" width="200" height="200"></canvas>
-        <a class="invoice-string invoice-link" id="invoice-text" href="#" title="Open in wallet or click to copy"></a>
-        <div class="invoice-copy-hint">Click to copy the full invoice.</div>
-        <div class="modal-footer">
-          <span class="hint">Use a Lightning wallet or tap the link to copy.</span>
+        <div id="demo-funded-msg" style="display:none;text-align:center;padding:18px 0 8px;">
+          <div style="font-size:28px;margin-bottom:8px;">⚡</div>
+          <div style="font-size:15px;font-weight:700;color:var(--green);margin-bottom:4px)">Wallet funded!</div>
+          <div style="font-size:12px;color:var(--text-faint);margin-top:6px;" id="demo-funded-sub"></div>
+        </div>
+        <canvas id="qr-canvas" width="200" height="200" style="display:none;"></canvas>
+        <button class="copy-invoice-btn" id="invoice-text" style="display:none;">Copy invoice</button>
+        <div class="modal-footer" id="invoice-hint" style="display:none;">
+          <span class="hint">Scan the QR or copy the invoice into any Lightning wallet.</span>
         </div>
       </div>
       <div style="border-top:1px solid var(--border);margin-top:18px;padding-top:16px;">
@@ -789,6 +1546,14 @@
         </div>
         <button class="modal-btn" id="save-budget-btn" style="width:100%;margin-top:4px;">Save Limits</button>
         <div id="budget-saved" style="font-size:11px;color:var(--green);text-align:center;margin-top:6px;opacity:0;transition:opacity 0.3s;"></div>
+      </div>
+      <div style="border-top:1px solid var(--border);margin-top:18px;padding-top:16px;">
+        <h2 style="font-size:14px;margin-bottom:6px;">Autonomous Shopping</h2>
+        <p style="font-size:12px;color:var(--text-faint);margin-bottom:12px;">Give Mintty a budget and let it surprise you — it'll find something you'd like and buy it.</p>
+        <div class="modal-row" id="bwil-row">
+          <input type="number" id="bwil-amount" placeholder="Budget in sats (e.g. 5000)" min="1" style="flex:1;" />
+          <button class="modal-btn" id="bwil-btn">Buy What I Like</button>
+        </div>
       </div>
       <div class="modal-footer" style="margin-top:14px;">
         <span></span>
@@ -819,36 +1584,17 @@
     const sendBtn = document.getElementById('send');
     const launchPlatformEl = document.getElementById('launch-platform');
     const budgetEl = document.getElementById('budget');
+    const menuBudgetEl = document.getElementById('menu-budget');
 
-    // Session ID for conversation memory
-    let sessionId = crypto.randomUUID();
+    // Session ID — restored from last session if available, otherwise fresh
+    let sessionId = localStorage.getItem('mintty_session_id') || crypto.randomUUID();
+    localStorage.setItem('mintty_session_id', sessionId);
 
     const emptyStateMarkup = `
       <div class="empty-state">
         <h2>Hi! What can I buy for you?</h2>
-        <p></p>
-        ${thinkingSymbolMarkup()}
       </div>
     `;
-
-    function thinkingSymbolMarkup(compact = false) {
-      const cls = compact ? 'thinking-symbol compact' : 'thinking-symbol';
-      return `
-        <svg class="${cls}" viewBox="0 0 142 118" aria-hidden="true">
-          <line class="edge" x1="16" y1="14" x2="116" y2="34"></line>
-          <line class="edge" x1="16" y1="14" x2="116" y2="85"></line>
-          <line class="edge active" x1="16" y1="55" x2="116" y2="34"></line>
-          <line class="edge" x1="16" y1="55" x2="116" y2="85"></line>
-          <line class="edge" x1="16" y1="98" x2="116" y2="34"></line>
-          <line class="edge" x1="16" y1="98" x2="116" y2="85"></line>
-          <circle class="node" cx="16" cy="14" r="12"></circle>
-          <circle class="node active" cx="16" cy="55" r="12"></circle>
-          <circle class="node" cx="16" cy="98" r="12"></circle>
-          <circle class="node active" cx="116" cy="34" r="12"></circle>
-          <circle class="node" cx="116" cy="85" r="12"></circle>
-        </svg>
-      `;
-    }
 
     // ---- Bird animation ----
     function launchBird() {
@@ -913,14 +1659,50 @@
       setTimeout(() => container.remove(), 940);
     }
 
+    // ---- No-balance warning bar ----
+    const noBalanceBar = document.getElementById('no-balance-bar');
+    let balanceWarningDismissed = false;
+
+    document.getElementById('no-balance-bar-close').addEventListener('click', () => {
+      balanceWarningDismissed = true;
+      noBalanceBar.classList.remove('visible');
+    });
+
+    document.getElementById('no-balance-bar-sub').addEventListener('click', () => {
+      walletModal.classList.add('open');
+      invoiceArea.classList.remove('active');
+      document.getElementById('demo-funded-msg').style.display = 'none';
+      fundAmountEl.value = '';
+      Promise.all([refreshModalBalance(), loadBudgetSettings()]);
+    });
+
+    async function checkWalletBalance() {
+      try {
+        const res = await fetch('/wallet/balance');
+        const data = await res.json();
+        const bal = data.balance_sats || 0;
+        if (bal === 0 && !balanceWarningDismissed) {
+          noBalanceBar.classList.add('visible');
+        } else {
+          noBalanceBar.classList.remove('visible');
+          if (bal > 0) balanceWarningDismissed = false; // reset if funded
+        }
+      } catch (e) {
+        // silently ignore
+      }
+    }
+
     // ---- Budget ----
     async function refreshBudget() {
       try {
         const res = await fetch('/budget');
         const data = await res.json();
-        budgetEl.textContent = data.remaining_sats.toLocaleString();
+        const amt = data.remaining_sats.toLocaleString();
+        if (budgetEl) budgetEl.textContent = amt;
+        if (menuBudgetEl) menuBudgetEl.textContent = amt + ' sats';
       } catch (e) {
-        budgetEl.textContent = '?';
+        if (budgetEl) budgetEl.textContent = '?';
+        if (menuBudgetEl) menuBudgetEl.textContent = '?';
       }
     }
     refreshBudget();
@@ -928,7 +1710,8 @@
     // ---- Stream events ----
     function showEmptyState() {
       streamEl.innerHTML = emptyStateMarkup;
-      sessionId = crypto.randomUUID(); // new conversation
+      sessionId = crypto.randomUUID();
+      localStorage.setItem('mintty_session_id', sessionId);
     }
 
     function removeEmptyState() {
@@ -944,75 +1727,183 @@
     function renderMarkdown(text) {
       const lines = String(text || '').split('\n');
       const html = [];
-      let listOpen = false;
+      let listType = null;
+      let olCounter = 0;
+      let pendingListClose = false;
       let paragraph = [];
+      let inCode = false;
+      let codeLang = '';
+      let codeLines = [];
 
       const flushParagraph = () => {
         if (!paragraph.length) return;
-        html.push(`<p>${formatInline(paragraph.join(' '))}</p>`);
+        const joined = paragraph.join('\n').trim();
+        if (joined) html.push(`<p>${formatInline(joined)}</p>`);
         paragraph = [];
       };
 
       const closeList = () => {
-        if (!listOpen) return;
-        html.push('</ul>');
-        listOpen = false;
+        if (!listType) return;
+        html.push(`</${listType}>`);
+        listType = null;
       };
 
-      for (const rawLine of lines) {
-        const line = rawLine.trim();
-        if (!line) {
-          flushParagraph();
-          closeList();
+      const openList = (type) => {
+        if (listType === type) return;
+        closeList();
+        if (type === 'ol') olCounter = 0;
+        html.push(`<${type}>`);
+        listType = type;
+      };
+
+      for (let i = 0; i < lines.length; i++) {
+        const rawLine = lines[i];
+        const line = rawLine;
+
+        // Fenced code block toggle
+        if (line.trimStart().startsWith('```')) {
+          if (!inCode) {
+            flushParagraph();
+            closeList();
+            codeLang = line.trim().slice(3).trim();
+            codeLines = [];
+            inCode = true;
+          } else {
+            const escaped = codeLines.map(l => escapeHtml(l)).join('\n');
+            html.push(`<pre><code>${escaped}</code></pre>`);
+            codeLines = [];
+            inCode = false;
+          }
           continue;
         }
 
-        const heading = line.match(/^(#{2,4})\s+(.+)$/);
+        if (inCode) {
+          codeLines.push(rawLine);
+          continue;
+        }
+
+        const trimmed = line.trim();
+
+        // Blank line — defer list close in case next line continues the list
+        if (!trimmed) {
+          flushParagraph();
+          if (listType) pendingListClose = true;
+          continue;
+        }
+
+        // Resolve deferred list close: keep list open if next line is same type
+        if (pendingListClose) {
+          const nextIsBullet = /^[-*+]\s+/.test(trimmed);
+          const nextIsNumbered = /^\d+\.\s+/.test(trimmed);
+          const continues = (listType === 'ul' && nextIsBullet) || (listType === 'ol' && nextIsNumbered);
+          if (!continues) closeList();
+          pendingListClose = false;
+        }
+
+        // Horizontal rule
+        if (/^(-{3,}|\*{3,}|_{3,})$/.test(trimmed)) {
+          flushParagraph();
+          closeList();
+          html.push('<hr>');
+          continue;
+        }
+
+        // Headings
+        const heading = trimmed.match(/^(#{1,6})\s+(.+)$/);
         if (heading) {
           flushParagraph();
           closeList();
-          const level = heading[1].length <= 2 ? 'h2' : 'h3';
-          html.push(`<${level}>${formatInline(heading[2])}</${level}>`);
+          const lvl = Math.min(heading[1].length, 3);
+          html.push(`<h${lvl}>${formatInline(heading[2])}</h${lvl}>`);
           continue;
         }
 
-        const bullet = line.match(/^[-*]\s+(.+)$/);
+        // Blockquote
+        if (trimmed.startsWith('> ')) {
+          flushParagraph();
+          closeList();
+          html.push(`<blockquote><p>${formatInline(trimmed.slice(2))}</p></blockquote>`);
+          continue;
+        }
+
+        // Unordered list
+        const bullet = trimmed.match(/^[-*+]\s+(.+)$/);
         if (bullet) {
           flushParagraph();
-          if (!listOpen) {
-            html.push('<ul>');
-            listOpen = true;
-          }
+          openList('ul');
           html.push(`<li>${formatInline(bullet[1])}</li>`);
           continue;
         }
 
-        paragraph.push(line);
+        // Ordered list
+        const numbered = trimmed.match(/^\d+\.\s+(.+)$/);
+        if (numbered) {
+          flushParagraph();
+          openList('ol');
+          olCounter++;
+          html.push(`<li data-n="${olCounter}">${formatInline(numbered[1])}</li>`);
+          continue;
+        }
+
+        // Table row
+        if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
+          const cells = trimmed.slice(1, -1).split('|').map(c => c.trim());
+          // Skip separator rows (|---|---|)
+          if (cells.every(c => /^[-: ]+$/.test(c))) continue;
+          flushParagraph();
+          closeList();
+          // Peek: if previous html ends with </th> it's a header row already
+          const isHeader = html[html.length - 1] !== '</tr>' && !html.some(h => h.includes('<td>'));
+          if (isHeader && !html.some(h => h.includes('<table>'))) html.push('<table>');
+          const tag = html.some(h => h.includes('<th>')) ? 'td' : 'th';
+          html.push(`<tr>${cells.map(c => `<${tag}>${formatInline(c)}</${tag}>`).join('')}</tr>`);
+          continue;
+        }
+
+        paragraph.push(trimmed);
       }
 
+      // Flush remaining
+      if (inCode && codeLines.length) {
+        html.push(`<pre><code>${codeLines.map(l => escapeHtml(l)).join('\n')}</code></pre>`);
+      }
       flushParagraph();
       closeList();
-      return html.join('');
+
+      // Wrap table rows
+      let out = html.join('');
+      out = out.replace(/(<tr>.*?<\/tr>)+/gs, m => `<table>${m}</table>`);
+      return out;
     }
 
     function formatInline(text) {
       return escapeHtml(text)
+        // Bold + italic
+        .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+        // Bold
         .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-        .replace(/`(.+?)`/g, '<code>$1</code>');
+        .replace(/__(.+?)__/g, '<strong>$1</strong>')
+        // Italic
+        .replace(/\*([^*\n]+?)\*/g, '<em>$1</em>')
+        .replace(/_([^_\n]+?)_/g, '<em>$1</em>')
+        // Inline code
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        // Links [text](url)
+        .replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+        // Bare URLs
+        .replace(/(^|[\s(])(https?:\/\/[^\s)]+)/g, '$1<a href="$2" target="_blank" rel="noopener">$2</a>');
     }
 
     function addEvent(type, text, meta = {}) {
       const div = document.createElement('div');
       div.className = `event ${type}`;
 
-      if (type === 'step') {
-        div.innerHTML = `
-          ${thinkingSymbolMarkup(true)}
-          <span class="event-text"><span class="spinner"></span>${escapeHtml(text || 'Thinking...')}</span>
-        `;
-      } else if (type === 'result') {
+      if (type === 'result') {
         div.dataset.raw = text || '';
-        div.innerHTML = renderMarkdown(div.dataset.raw);
+        const formSchema = parseFormBlock(text || '');
+        const cleanText = (text || '').replace(/:::form[\s\S]*?:::/g, '').trim();
+        div.innerHTML = cleanText ? renderMarkdown(cleanText) : '';
+        if (formSchema) renderForm(formSchema, div);
       } else {
         div.textContent = text;
       }
@@ -1022,22 +1913,44 @@
       return div;
     }
 
-    function clearSpinners() {
-      streamEl.querySelectorAll('.spinner').forEach(el => {
-        el.parentElement.parentElement.classList.add('done');
-        el.remove();
-      });
+    let activeThinkingEl = null;
+
+    function showThinking(text) {
+      if (!activeThinkingEl) {
+        activeThinkingEl = document.createElement('div');
+        activeThinkingEl.className = 'thinking-indicator';
+        streamEl.appendChild(activeThinkingEl);
+      }
+      activeThinkingEl.innerHTML = `
+        <svg class="thinking-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="50" cy="50" r="45" fill="#e77d59"/>
+          <path d="M30 55 Q35 30 50 28 Q65 30 70 55" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+          <circle cx="40" cy="52" r="4" fill="#fff"/>
+          <circle cx="60" cy="52" r="4" fill="#fff"/>
+          <path d="M43 62 Q50 68 57 62" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+          <path d="M25 38 Q30 25 42 28" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+          <path d="M75 38 Q70 25 58 28" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+        </svg>
+        <span>${escapeHtml(text || 'Thinking...')}</span>
+      `;
+      if (!stepsVisible) activeThinkingEl.style.display = 'none';
+      streamEl.scrollTop = streamEl.scrollHeight;
+      return activeThinkingEl;
     }
 
-    function showThinking() {
-      const existing = streamEl.querySelector('.event.step.quiet');
-      if (existing) return existing;
-      const event = addEvent('step', 'Thinking...');
-      event.classList.add('quiet');
-      return event;
+    function clearThinking() {
+      if (activeThinkingEl) {
+        activeThinkingEl.remove();
+        activeThinkingEl = null;
+      }
     }
 
     // ---- Send query ----
+    function sendMessage(text) {
+      queryEl.value = text;
+      sendQuery();
+    }
+
     async function sendQuery() {
       const query = queryEl.value.trim();
       if (!query) return;
@@ -1050,7 +1963,7 @@
 
       removeEmptyState();
       addEvent('user', query);
-      showThinking();
+      showThinking('Thinking...');
 
       // Small delay so the bird is visible before stream starts
       await new Promise(r => setTimeout(r, 400));
@@ -1103,16 +2016,16 @@
       queryEl.focus();
     }
 
+    let stepsVisible = true;
     let streamingResultEl = null;
 
     function handleEvent(event, data) {
       switch (event) {
         case 'step':
-          showThinking();
+          showThinking(data.text);
           break;
         case 'result_delta':
-          // Streaming chunk of final answer
-          clearSpinners();
+          clearThinking();
           if (!streamingResultEl) {
             streamingResultEl = addEvent('result', '');
           }
@@ -1121,21 +2034,27 @@
           streamEl.scrollTop = streamEl.scrollHeight;
           break;
         case 'result':
-          clearSpinners();
+          clearThinking();
           if (streamingResultEl) {
-            // Finalize the streamed result
+            const raw = streamingResultEl.dataset.raw || '';
+            const formSchema = parseFormBlock(raw);
+            if (formSchema) {
+              const cleanText = raw.replace(/:::form[\s\S]*?:::/g, '').trim();
+              streamingResultEl.innerHTML = cleanText ? renderMarkdown(cleanText) : '';
+              renderForm(formSchema, streamingResultEl);
+            }
             streamingResultEl = null;
           } else {
             addEvent('result', data.text);
           }
           break;
         case 'error':
-          clearSpinners();
+          clearThinking();
           streamingResultEl = null;
           addEvent('error', data.text);
           break;
         case 'done':
-          clearSpinners();
+          clearThinking();
           streamingResultEl = null;
           break;
       }
@@ -1147,9 +2066,186 @@
     });
 
     document.getElementById('new-chat-btn').addEventListener('click', () => {
+      closeMenu();
       showEmptyState();
       queryEl.focus();
     });
+
+    // ---- Hide/show steps ----
+    const toggleStepsBtn = document.getElementById('toggle-steps-btn');
+
+    toggleStepsBtn.addEventListener('click', () => {
+      stepsVisible = !stepsVisible;
+      if (activeThinkingEl) activeThinkingEl.style.display = stepsVisible ? '' : 'none';
+      toggleStepsBtn.textContent = stepsVisible ? 'Hide Steps' : 'Show Steps';
+    });
+
+    // ---- Audit sidebar ----
+    const auditSidebar = document.getElementById('audit-sidebar');
+    const auditList = document.getElementById('audit-list');
+
+    function openAudit() {
+      auditSidebar.classList.add('open');
+      historyOverlay.classList.add('open');
+      loadAuditLog();
+    }
+
+    function closeAudit() {
+      auditSidebar.classList.remove('open');
+      historyOverlay.classList.remove('open');
+    }
+
+    document.getElementById('audit-btn').addEventListener('click', () => { closeMenu(); openAudit(); });
+    document.getElementById('audit-close-btn').addEventListener('click', closeAudit);
+
+    function auditRelTime(dateStr) {
+      const date = new Date(dateStr.replace(' ', 'T') + 'Z');
+      const diffS = Math.floor((Date.now() - date) / 1000);
+      if (diffS < 60) return 'just now';
+      if (diffS < 3600) return `${Math.floor(diffS/60)}m ago`;
+      if (diffS < 86400) return `${Math.floor(diffS/3600)}h ago`;
+      return date.toLocaleDateString();
+    }
+
+    async function loadAuditLog() {
+      auditList.innerHTML = '<div style="padding:16px;color:var(--text-faint);font-size:13px;">Loading...</div>';
+      try {
+        const [txRes, budgetRes] = await Promise.all([
+          fetch('/transactions?limit=200'),
+          fetch('/budget'),
+        ]);
+        const { transactions: txns } = await txRes.json();
+
+        const paid = txns.filter(t => t.status === 'completed');
+        const totalSpent = paid.reduce((s, t) => s + t.amount_sats, 0);
+
+        document.getElementById('audit-stat-spent').textContent = totalSpent.toLocaleString() + ' sats';
+        document.getElementById('audit-stat-paid').textContent = paid.length;
+        document.getElementById('audit-stat-total').textContent = txns.length;
+
+        if (!txns.length) {
+          auditList.innerHTML = '<div style="padding:16px;color:var(--text-faint);font-size:13px;">No transactions yet.</div>';
+          return;
+        }
+
+        const statusIcons = { completed: '✓', pending: '◎', failed: '✕', reserved: '◎' };
+        const statusLabels = { completed: 'Paid', pending: 'Pending', failed: 'Failed', reserved: 'Reserved' };
+
+        auditList.innerHTML = '';
+        for (const tx of txns) {
+          const hasAmt = tx.amount_sats > 0;
+          const status = tx.status || 'pending';
+          const item = document.createElement('div');
+          item.className = 'audit-item';
+          item.innerHTML = `
+            <div class="audit-item-top">
+              <div class="audit-item-vendor">${escapeHtml(tx.vendor || '—')}</div>
+              <div class="audit-item-amount ${hasAmt ? '' : 'dash'}">${hasAmt ? tx.amount_sats.toLocaleString() + ' sats' : '—'}</div>
+            </div>
+            <div class="audit-item-bottom">
+              <div class="audit-item-url" title="${escapeHtml(tx.url || '')}">${escapeHtml(tx.url || '—')}</div>
+              <div class="audit-item-right">
+                <span class="audit-badge ${status}">${statusIcons[status] || '?'} ${statusLabels[status] || status}</span>
+                <span class="audit-item-time">${auditRelTime(tx.created_at)}</span>
+              </div>
+            </div>
+          `;
+          auditList.appendChild(item);
+        }
+      } catch (e) {
+        auditList.innerHTML = '<div style="padding:16px;color:var(--red);font-size:13px;">Failed to load transactions.</div>';
+      }
+    }
+
+    // ---- Menu sidebar ----
+    const menuSidebar = document.getElementById('menu-sidebar');
+
+    function openMenu() {
+      menuSidebar.classList.add('open');
+      historyOverlay.classList.add('open');
+      refreshBudget();
+    }
+
+    function closeMenu() {
+      menuSidebar.classList.remove('open');
+      historyOverlay.classList.remove('open');
+    }
+
+    document.getElementById('menu-btn').addEventListener('click', openMenu);
+    document.getElementById('menu-close-btn').addEventListener('click', closeMenu);
+
+    // ---- History sidebar ----
+    const historySidebar = document.getElementById('history-sidebar');
+    const historyOverlay = document.getElementById('history-overlay');
+    const historyList = document.getElementById('history-list');
+
+    function openHistory() {
+      historySidebar.classList.add('open');
+      historyOverlay.classList.add('open');
+      loadHistoryList();
+    }
+
+    function closeHistory() {
+      historySidebar.classList.remove('open');
+      historyOverlay.classList.remove('open');
+    }
+
+    document.getElementById('history-btn').addEventListener('click', () => { closeMenu(); openHistory(); });
+    document.getElementById('history-close-btn').addEventListener('click', closeHistory);
+    historyOverlay.addEventListener('click', () => { closeMenu(); closeHistory(); closeAudit(); });
+
+    function formatRelativeDate(dateStr) {
+      const date = new Date(dateStr.replace(' ', 'T') + 'Z');
+      const now = new Date();
+      const diffMs = now - date;
+      const diffDays = Math.floor(diffMs / 86400000);
+      if (diffDays === 0) return 'Today';
+      if (diffDays === 1) return 'Yesterday';
+      if (diffDays < 7) return `${diffDays} days ago`;
+      return date.toLocaleDateString();
+    }
+
+    async function loadHistoryList() {
+      historyList.innerHTML = '<div style="padding:16px;color:var(--text-faint);font-size:13px;">Loading...</div>';
+      try {
+        const res = await fetch('/sessions');
+        const data = await res.json();
+        historyList.innerHTML = '';
+        if (!data.sessions.length) {
+          historyList.innerHTML = '<div style="padding:16px;color:var(--text-faint);font-size:13px;">No conversations yet.</div>';
+          return;
+        }
+        for (const s of data.sessions) {
+          const item = document.createElement('div');
+          item.className = 'history-item' + (s.session_id === sessionId ? ' active' : '');
+          const title = (s.title || 'Untitled').slice(0, 60);
+          item.innerHTML = `
+            <div class="history-item-title">${escapeHtml(title)}</div>
+            <div class="history-item-date">${formatRelativeDate(s.updated_at)}</div>
+          `;
+          item.addEventListener('click', () => loadSession(s.session_id));
+          historyList.appendChild(item);
+        }
+      } catch (e) {
+        historyList.innerHTML = '<div style="padding:16px;color:var(--red);font-size:13px;">Failed to load history.</div>';
+      }
+    }
+
+    async function loadSession(sid) {
+      closeHistory();
+      try {
+        const res = await fetch(`/session/${sid}`);
+        const data = await res.json();
+        sessionId = sid;
+        localStorage.setItem('mintty_session_id', sid);
+        streamEl.innerHTML = '';
+        for (const msg of data.messages) {
+          if (msg.role === 'user') addEvent('user', msg.content);
+          else addEvent('result', msg.content);
+        }
+        streamEl.scrollTop = streamEl.scrollHeight;
+      } catch (e) {}
+    }
 
     // ---- Wallet funding modal ----
     const fundBtn = document.getElementById('fund-btn');
@@ -1199,9 +2295,15 @@
       saveBudgetBtn.disabled = false;
     });
 
+    // Initial balance check + poll every 15s
+    checkWalletBalance();
+    setInterval(checkWalletBalance, 15000);
+
     fundBtn.addEventListener('click', async () => {
+      closeMenu();
       walletModal.classList.add('open');
       invoiceArea.classList.remove('active');
+      document.getElementById('demo-funded-msg').style.display = 'none';
       fundAmountEl.value = '';
       await Promise.all([refreshModalBalance(), loadBudgetSettings()]);
     });
@@ -1218,13 +2320,44 @@
       }
     });
 
+    // ---- Buy What I Like ----
+    const bwilBtn = document.getElementById('bwil-btn');
+    const bwilAmount = document.getElementById('bwil-amount');
+
+    bwilBtn.addEventListener('click', () => {
+      const sats = parseInt(bwilAmount.value);
+      if (!sats || sats < 1) { bwilAmount.focus(); return; }
+
+      // Close modal
+      walletModal.classList.remove('open');
+      if (balancePoll) { clearInterval(balancePoll); balancePoll = null; }
+      bwilAmount.value = '';
+
+      // Send autonomous shopping prompt to agent
+      const prompt = `Based on what I've bought or looked at buying in our conversation so far, autonomously find and buy something I would enjoy. My budget is ${sats.toLocaleString()} sats. Look at my interests and purchase history from this chat, pick the best match you can find, get the exact price, and if it's within budget go ahead and order it — no need to ask me first. Surprise me!`;
+      sendMessage(prompt);
+    });
+
     async function refreshModalBalance() {
       try {
-        const res = await fetch('/wallet/balance');
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 12000);
+        let res;
+        try {
+          res = await fetch('/wallet/balance', { signal: controller.signal });
+        } finally {
+          clearTimeout(timeout);
+        }
         const data = await res.json();
-        modalBalance.textContent = (data.balance_sats || 0).toLocaleString();
+        if (data.error) {
+          modalBalance.textContent = 'unavailable';
+          modalBalance.title = data.error;
+        } else {
+          modalBalance.textContent = (data.balance_sats || 0).toLocaleString();
+          modalBalance.title = '';
+        }
       } catch (e) {
-        modalBalance.textContent = '?';
+        modalBalance.textContent = 'unavailable';
       }
     }
 
@@ -1236,24 +2369,43 @@
       generateBtn.textContent = '...';
 
       try {
-        const res = await fetch('/wallet/receive', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ amount_sats: amount }),
-        });
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 20000);
+        let res;
+        try {
+          res = await fetch('/wallet/receive', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ amount_sats: amount }),
+            signal: controller.signal,
+          });
+        } finally {
+          clearTimeout(timeout);
+        }
         const data = await res.json();
 
         if (data.error) {
-          invoiceText.textContent = 'Error: ' + data.error;
+          invoiceText.textContent = 'Error generating invoice';
+          invoiceText.title = data.error;
           invoiceArea.classList.add('active');
           return;
         }
 
-        const invoice = data.invoice;
-        invoiceText.href = `lightning:${invoice}`;
-        invoiceText.dataset.invoice = invoice;
-        invoiceText.textContent = 'Open invoice in wallet';
+        // Demo mode: show instant funded confirmation
+        const demoMsg = document.getElementById('demo-funded-msg');
+        const demoSub = document.getElementById('demo-funded-sub');
+        demoMsg.style.display = 'block';
+        demoSub.textContent = `+${amount.toLocaleString()} sats added to your wallet`;
         invoiceArea.classList.add('active');
+        await refreshModalBalance();
+        refreshBudget();
+        checkWalletBalance();
+
+        if (false) { // real invoice path (unused in demo mode)
+        const invoice = data.invoice;
+        invoiceText.dataset.invoice = invoice;
+        invoiceText.textContent = 'Copy invoice';
+        invoiceText.classList.remove('copied');
 
         // Draw QR code via public API
         const size = 200;
@@ -1266,6 +2418,7 @@
         img.crossOrigin = 'anonymous';
         img.src = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(invoice)}&margin=8`;
         img.onload = () => ctx.drawImage(img, 0, 0, size, size);
+        } // end real invoice path
 
         // Poll for balance change every 3s
         const startBalance = parseInt(modalBalance.textContent.replace(/,/g, '')) || 0;
@@ -1277,14 +2430,15 @@
             clearInterval(balancePoll);
             balancePoll = null;
             refreshBudget();
+            checkWalletBalance();
             invoiceText.textContent = 'Payment received!';
-            invoiceText.removeAttribute('href');
             invoiceText.classList.add('copied');
-            setTimeout(() => invoiceText.classList.remove('copied'), 3000);
+            setTimeout(() => { invoiceText.textContent = 'Copy invoice'; invoiceText.classList.remove('copied'); }, 3000);
           }
         }, 3000);
       } catch (e) {
-        invoiceText.textContent = 'Error: ' + e.message;
+        const msg = e.name === 'AbortError' ? 'Timed out — is the wallet configured?' : e.message;
+        invoiceText.textContent = 'Error: ' + msg;
         invoiceArea.classList.add('active');
       } finally {
         generateBtn.disabled = false;
@@ -1293,19 +2447,221 @@
     });
 
     // Copy invoice on click
-    invoiceText.addEventListener('click', (e) => {
-      if (invoiceText.getAttribute('href') && invoiceText.getAttribute('href') !== '#') {
-        e.preventDefault();
-      }
+    invoiceText.addEventListener('click', () => {
       const text = invoiceText.dataset.invoice || '';
-      if (text && !text.startsWith('Error') && !text.startsWith('Payment')) {
-        navigator.clipboard.writeText(text);
-        invoiceText.classList.add('copied');
-        setTimeout(() => invoiceText.classList.remove('copied'), 1500);
-      }
+      if (!text) return;
+      navigator.clipboard.writeText(text);
+      invoiceText.textContent = 'Copied!';
+      invoiceText.classList.add('copied');
+      setTimeout(() => {
+        invoiceText.textContent = 'Copy invoice';
+        invoiceText.classList.remove('copied');
+      }, 1500);
     });
 
-    showEmptyState();
+    // ---- Agent forms ----
+    function parseFormBlock(text) {
+      const match = text.match(/:::form\s*([\s\S]*?):::/);
+      if (!match) return null;
+      try { return JSON.parse(match[1].trim()); } catch (e) { return null; }
+    }
+
+    function renderForm(schema, resultEl) {
+      const form = document.createElement('div');
+      form.className = 'agent-form';
+
+      if (schema.title) {
+        const title = document.createElement('div');
+        title.className = 'agent-form-title';
+        title.textContent = schema.title;
+        form.appendChild(title);
+      }
+
+      const body = document.createElement('div');
+      body.className = 'agent-form-body';
+
+      const fieldValues = {};
+
+      for (const field of (schema.fields || [])) {
+        const wrap = document.createElement('div');
+        wrap.className = 'agent-form-field';
+
+        const label = document.createElement('label');
+        label.textContent = field.label;
+        wrap.appendChild(label);
+
+        if (field.type === 'chips') {
+          const row = document.createElement('div');
+          row.className = 'chips-row';
+          fieldValues[field.id] = null;
+
+          // "Other" text input — hidden until Other chip is selected
+          const otherInput = document.createElement('input');
+          otherInput.type = 'text';
+          otherInput.placeholder = 'Please specify...';
+          otherInput.style.cssText = 'display:none;margin-top:10px;width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:14px;padding:10px 12px;border-radius:8px;outline:none;';
+          otherInput.addEventListener('focus', () => { otherInput.style.borderColor = 'var(--accent)'; });
+          otherInput.addEventListener('blur', () => { otherInput.style.borderColor = 'var(--border)'; });
+          otherInput.addEventListener('input', () => { fieldValues[field.id] = otherInput.value; });
+
+          for (const opt of (field.options || [])) {
+            const chip = document.createElement('button');
+            chip.className = 'chip';
+            chip.textContent = opt;
+            chip.addEventListener('click', () => {
+              row.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+              chip.classList.add('selected');
+              const isOther = opt.toLowerCase() === 'other';
+              otherInput.style.display = isOther ? 'block' : 'none';
+              if (isOther) {
+                fieldValues[field.id] = otherInput.value || null;
+                otherInput.focus();
+              } else {
+                fieldValues[field.id] = opt;
+              }
+            });
+            row.appendChild(chip);
+          }
+          wrap.appendChild(row);
+          wrap.appendChild(otherInput);
+        } else if (field.type === 'cards') {
+          const grid = document.createElement('div');
+          grid.className = 'card-options';
+          fieldValues[field.id] = null;
+
+          for (const opt of (field.options || [])) {
+            const card = document.createElement('div');
+            card.className = 'option-card';
+
+            if (opt.image) {
+              const img = document.createElement('img');
+              img.className = 'option-card-img';
+              img.src = opt.image;
+              img.alt = opt.label || '';
+              img.loading = 'lazy';
+              img.onerror = () => {
+                const ph = document.createElement('div');
+                ph.className = 'option-card-img-placeholder';
+                ph.textContent = '📦';
+                img.replaceWith(ph);
+              };
+              card.appendChild(img);
+            } else {
+              const ph = document.createElement('div');
+              ph.className = 'option-card-img-placeholder';
+              ph.textContent = '📦';
+              card.appendChild(ph);
+            }
+
+            const body = document.createElement('div');
+            body.className = 'option-card-body';
+            body.innerHTML = `
+              <div class="option-card-label">${escapeHtml(opt.label || '')}</div>
+              ${opt.sublabel ? `<div class="option-card-sublabel">${escapeHtml(opt.sublabel)}</div>` : ''}
+            `;
+            card.appendChild(body);
+
+            card.addEventListener('click', () => {
+              grid.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+              card.classList.add('selected');
+              fieldValues[field.id] = opt;
+            });
+
+            grid.appendChild(card);
+          }
+          wrap.appendChild(grid);
+
+        } else if (field.type === 'textarea') {
+          const ta = document.createElement('textarea');
+          ta.placeholder = field.placeholder || '';
+          ta.rows = 3;
+          ta.addEventListener('input', () => { fieldValues[field.id] = ta.value; });
+          wrap.appendChild(ta);
+        } else {
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.placeholder = field.placeholder || '';
+          input.addEventListener('input', () => { fieldValues[field.id] = input.value; });
+          wrap.appendChild(input);
+        }
+
+        body.appendChild(wrap);
+      }
+
+      form.appendChild(body);
+
+      const footer = document.createElement('div');
+      footer.className = 'agent-form-footer';
+
+      const skipBtn = document.createElement('button');
+      skipBtn.className = 'form-skip-btn';
+      skipBtn.textContent = 'Skip';
+
+      const submitBtn = document.createElement('button');
+      submitBtn.className = 'form-submit-btn';
+      submitBtn.textContent = 'Continue';
+
+      const submitForm = (skipped) => {
+        form.classList.add('submitted');
+        if (skipped) {
+          queryEl.value = 'Skip';
+        } else {
+          const parts = [];
+          for (const field of (schema.fields || [])) {
+            const val = fieldValues[field.id];
+            if (!val) continue;
+            if (typeof val === 'object' && val.label) {
+              // cards selection — include id for the agent to reference
+              const desc = val.id ? `${val.label} (id: ${val.id})` : val.label;
+              parts.push(`${field.label.replace('?','')}: ${desc}`);
+            } else {
+              parts.push(`${field.label.replace('?','')}: ${val}`);
+            }
+          }
+          queryEl.value = parts.join(' | ') || 'Continue';
+        }
+        sendQuery();
+      };
+
+      skipBtn.addEventListener('click', () => submitForm(true));
+      submitBtn.addEventListener('click', () => submitForm(false));
+
+      footer.appendChild(skipBtn);
+      footer.appendChild(submitBtn);
+      form.appendChild(footer);
+
+      resultEl.appendChild(form);
+    }
+
+    // Restore previous conversation on load
+    async function restoreSession() {
+      try {
+        const res = await fetch(`/session/last`);
+        const data = await res.json();
+        if (!data.session_id || data.messages.length === 0) {
+          showEmptyState();
+          return;
+        }
+        // If the stored session matches the last DB session, show its history
+        if (data.session_id === sessionId) {
+          streamEl.innerHTML = '';
+          for (const msg of data.messages) {
+            if (msg.role === 'user') {
+              addEvent('user', msg.content);
+            } else {
+              addEvent('result', msg.content);
+            }
+          }
+          streamEl.scrollTop = streamEl.scrollHeight;
+        } else {
+          showEmptyState();
+        }
+      } catch (e) {
+        showEmptyState();
+      }
+    }
+
+    restoreSession();
     queryEl.focus();
   </script>
 </body>

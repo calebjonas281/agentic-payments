@@ -11,7 +11,7 @@ from urllib.parse import urlparse
 import httpx
 
 from backend.budget import get_daily_limit, get_per_tx_limit, PurchaseTooLarge
-from backend.config import MDK_CMD, VENDOR_BLOCKLIST
+from backend.config import MDK_CMD, VENDOR_BLOCKLIST, DEMO_MODE, DEMO_BALANCE_SATS
 from backend.db import (
     check_budget_and_reserve,
     payment_hash_exists,
@@ -152,12 +152,16 @@ class PaymentResult:
 
 
 async def pay_invoice(invoice: str) -> PaymentResult:
-    """Pay a Lightning invoice via the MDK agent-wallet CLI.
+    """Pay a Lightning invoice.
 
-    Runs: npx @moneydevkit/agent-wallet@latest send <invoice>
-    MDK outputs JSON to stdout. The preimage (proof of payment) is
-    required for L402 authorization headers.
+    In demo mode, simulates a successful payment instantly.
     """
+    if DEMO_MODE:
+        import hashlib, secrets
+        preimage = secrets.token_hex(32)
+        payment_hash = hashlib.sha256(preimage.encode()).hexdigest()
+        return PaymentResult(preimage=preimage, payment_hash=payment_hash)
+
     proc = await asyncio.create_subprocess_exec(
         *MDK_CMD,
         "send",
@@ -165,7 +169,11 @@ async def pay_invoice(invoice: str) -> PaymentResult:
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
-    stdout, stderr = await proc.communicate()
+    try:
+        stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=60)
+    except asyncio.TimeoutError:
+        proc.kill()
+        raise L402Error("mdk send timed out after 60s")
 
     if proc.returncode != 0:
         raise L402Error(
@@ -199,18 +207,34 @@ async def pay_invoice(invoice: str) -> PaymentResult:
 
 
 async def get_wallet_balance() -> int:
-    """Get the wallet balance in sats via the MDK agent-wallet CLI.
+    """Get the wallet balance in sats.
 
-    Runs: npx @moneydevkit/agent-wallet@latest balance
-    Expects JSON output: {"balance_sats":50000}
+    In demo mode, returns a simulated balance minus any completed transactions today.
     """
+    if DEMO_MODE:
+        from backend.db import get_db
+        db = await get_db()
+        spent_row = await db.execute_fetchall(
+            "SELECT COALESCE(SUM(amount_sats),0) FROM transactions WHERE status='completed'"
+        )
+        funded_row = await db.execute_fetchall(
+            "SELECT COALESCE(value,'0') FROM settings WHERE key='demo_funded_sats'"
+        )
+        spent = spent_row[0][0] if spent_row else 0
+        funded = int(funded_row[0][0]) if funded_row else 0
+        return max(0, DEMO_BALANCE_SATS + funded - spent)
+
     proc = await asyncio.create_subprocess_exec(
         *MDK_CMD,
         "balance",
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
-    stdout, stderr = await proc.communicate()
+    try:
+        stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=10)
+    except asyncio.TimeoutError:
+        proc.kill()
+        raise L402Error("mdk balance timed out after 10s — is the wallet configured?")
 
     if proc.returncode != 0:
         raise L402Error(
@@ -225,12 +249,58 @@ async def get_wallet_balance() -> int:
     return result.get("balance_sats", 0)
 
 
-async def create_receive_invoice(amount_sats: int | None = None) -> dict:
-    """Generate a receive invoice via the MDK agent-wallet CLI.
+def _demo_invoice(amount_sats: int | None) -> dict:
+    """Generate a realistic-looking mainnet Lightning invoice for demo mode."""
+    import hashlib
+    import secrets
+    from datetime import datetime, timedelta, timezone
 
-    Runs: npx @moneydevkit/agent-wallet@latest receive [amount]
-    Returns: {"invoice": "lnbc...", "payment_hash": "...", "expires_at": "..."}
+    token = secrets.token_hex(16)
+    payment_hash = hashlib.sha256(token.encode()).hexdigest()
+
+    # Build a realistic lnbc invoice string (not payable, but looks real)
+    amt = amount_sats or 0
+    if amt > 0:
+        # Encode amount in millisats as micro-BTC (u suffix)
+        micro_btc = (amt * 100_000) // 100  # amt sats → micro-BTC units
+        amt_str = f"{micro_btc}u"
+    else:
+        amt_str = ""
+
+    rand_body = secrets.token_hex(100)
+    invoice = f"lnbc{amt_str}1{rand_body}"
+
+    expires_at = (datetime.now(timezone.utc) + timedelta(hours=1)).strftime(
+        "%Y-%m-%dT%H:%M:%S.000Z"
+    )
+    return {"invoice": invoice, "payment_hash": payment_hash, "expires_at": expires_at}
+
+
+async def create_receive_invoice(amount_sats: int | None = None) -> dict:
+    """Generate a Lightning invoice to receive funds.
+
+    In demo mode, returns a realistic-looking (but non-payable) mainnet invoice
+    and auto-credits the wallet after a short delay.
     """
+    if DEMO_MODE:
+        result = _demo_invoice(amount_sats)
+        # Auto-credit the demo balance by reducing total spent (no-op since
+        # balance = DEMO_BALANCE_SATS - spent; funding just raises the ceiling)
+        # Store the funded amount so balance goes up
+        if amount_sats:
+            from backend.db import get_db
+            db = await get_db()
+            await db.execute(
+                "INSERT OR IGNORE INTO settings(key, value) VALUES(?, ?)",
+                ("demo_funded_sats", "0"),
+            )
+            await db.execute(
+                "UPDATE settings SET value = CAST(CAST(value AS INTEGER) + ? AS TEXT) WHERE key = ?",
+                (amount_sats, "demo_funded_sats"),
+            )
+            await db.commit()
+        return result
+
     cmd = [*MDK_CMD, "receive"]
     if amount_sats is not None:
         cmd.append(str(amount_sats))
@@ -240,7 +310,11 @@ async def create_receive_invoice(amount_sats: int | None = None) -> dict:
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
-    stdout, stderr = await proc.communicate()
+    try:
+        stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=15)
+    except asyncio.TimeoutError:
+        proc.kill()
+        raise L402Error("mdk receive timed out after 15s")
 
     if proc.returncode != 0:
         raise L402Error(
@@ -357,7 +431,10 @@ async def fetch_with_l402(
         # Per-transaction limit check
         per_tx = await get_per_tx_limit()
         if amount > per_tx:
-            raise PurchaseTooLarge(amount, per_tx)
+            raise L402Error(
+                f"Purchase too large — {amount:,} sats exceeds your single-purchase "
+                f"limit of {per_tx:,} sats. Raise the per-purchase cap in wallet settings."
+            )
 
         # Atomically check budget and reserve the payment in one transaction
         daily_limit = await get_daily_limit()
