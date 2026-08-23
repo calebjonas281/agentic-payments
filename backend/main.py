@@ -192,3 +192,9 @@ async def index():
 async def audit():
     """Serve the audit log page."""
     return HTMLResponse((_FRONTEND_DIR / "audit.html").read_text())
+
+
+@app.get("/zohoverify/verifyforzoho.html")
+async def zoho_verify():
+    """Serve the Zoho domain-verification file. Edit frontend/zohoverify/verifyforzoho.html with the real code from Zoho — no code changes needed after that."""
+    return HTMLResponse((_FRONTEND_DIR / "zohoverify" / "verifyforzoho.html").read_text())
