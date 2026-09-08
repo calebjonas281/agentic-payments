@@ -40,3 +40,16 @@ AMADEUS_BASE_URL = os.environ.get("AMADEUS_BASE_URL", "https://test.api.amadeus.
 
 # SerpAPI — Google Flights scraper (https://serpapi.com — 100 free searches/month)
 SERPAPI_KEY = os.environ.get("SERPAPI_KEY", "")
+
+# Stripe — card-funded wallet top-ups, with Stripe Tax calculating any tax owed
+# (https://dashboard.stripe.com/test/apikeys, https://dashboard.stripe.com/test/webhooks)
+STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "")
+STRIPE_PUBLISHABLE_KEY = os.environ.get("STRIPE_PUBLISHABLE_KEY", "")
+STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
+
+# Demo conversion rate for card top-ups. Mintty has no live fiat->BTC exchange
+# integration — a card top-up just credits the demo balance at this fixed rate.
+SATS_PER_USD = int(os.environ.get("AP_SATS_PER_USD", "1500"))
+
+# Base URL used to build Stripe Checkout success/cancel redirect URLs
+BASE_URL = os.environ.get("AP_BASE_URL", "http://localhost:8000")

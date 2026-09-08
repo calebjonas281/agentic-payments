@@ -1533,6 +1533,15 @@
         </div>
       </div>
       <div style="border-top:1px solid var(--border);margin-top:18px;padding-top:16px;">
+        <h2 style="font-size:14px;margin-bottom:6px;">Pay with Card</h2>
+        <p style="font-size:12px;color:var(--text-faint);margin-bottom:12px;">Top up with a card via Stripe. Tax is calculated automatically at checkout.</p>
+        <div class="modal-row">
+          <input type="number" id="fund-usd" placeholder="Amount in USD (e.g. 10)" min="1" step="0.01" style="flex:1;" />
+          <button class="modal-btn" id="card-fund-btn">Pay with Card</button>
+        </div>
+        <div id="card-fund-error" style="display:none;color:#e5484d;font-size:12px;margin-top:6px;"></div>
+      </div>
+      <div style="border-top:1px solid var(--border);margin-top:18px;padding-top:16px;">
         <h2 style="font-size:14px;margin-bottom:12px;">Spending Limits</h2>
         <div class="modal-row">
           <div style="flex:1;">
@@ -2298,6 +2307,74 @@
     // Initial balance check + poll every 15s
     checkWalletBalance();
     setInterval(checkWalletBalance, 15000);
+
+    // ---- Pay with Card (Stripe Checkout) ----
+    const cardFundBtn = document.getElementById('card-fund-btn');
+    const fundUsdEl = document.getElementById('fund-usd');
+    const cardFundError = document.getElementById('card-fund-error');
+
+    cardFundBtn.addEventListener('click', async () => {
+      const amountUsd = parseFloat(fundUsdEl.value);
+      if (!amountUsd || amountUsd <= 0) { fundUsdEl.focus(); return; }
+
+      cardFundBtn.disabled = true;
+      cardFundBtn.textContent = '...';
+      cardFundError.style.display = 'none';
+
+      try {
+        const res = await fetch('/wallet/fund/card', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount_usd: amountUsd }),
+        });
+        const data = await res.json();
+        if (data.error) {
+          cardFundError.textContent = data.error;
+          cardFundError.style.display = 'block';
+          return;
+        }
+        window.location.href = data.url;
+      } catch (e) {
+        cardFundError.textContent = 'Error: ' + e.message;
+        cardFundError.style.display = 'block';
+      } finally {
+        cardFundBtn.disabled = false;
+        cardFundBtn.textContent = 'Pay with Card';
+      }
+    });
+
+    // Returning from a Stripe Checkout redirect
+    (function handleStripeRedirect() {
+      const params = new URLSearchParams(window.location.search);
+      if (!params.has('funded')) return;
+      const funded = params.get('funded') === '1';
+      history.replaceState(null, '', window.location.pathname);
+
+      walletModal.classList.add('open');
+      invoiceArea.classList.remove('active');
+      refreshModalBalance();
+      loadBudgetSettings();
+
+      const demoMsg = document.getElementById('demo-funded-msg');
+      const demoSub = document.getElementById('demo-funded-sub');
+      if (funded) {
+        // Webhook delivery can lag the redirect slightly — poll for the balance to land.
+        let attempts = 0;
+        const poll = setInterval(async () => {
+          attempts++;
+          await refreshModalBalance();
+          refreshBudget();
+          checkWalletBalance();
+          if (attempts >= 5) clearInterval(poll);
+        }, 2000);
+        demoMsg.style.display = 'block';
+        demoSub.textContent = 'Payment received — crediting your wallet…';
+        invoiceArea.classList.add('active');
+      } else {
+        cardFundError.textContent = 'Card payment was cancelled.';
+        cardFundError.style.display = 'block';
+      }
+    })();
 
     fundBtn.addEventListener('click', async () => {
       closeMenu();

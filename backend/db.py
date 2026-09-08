@@ -67,6 +67,16 @@ async def _init_schema(db: aiosqlite.Connection) -> None:
         CREATE INDEX IF NOT EXISTS idx_messages_session
         ON messages (session_id, id)
     """)
+    await db.execute("""
+        CREATE TABLE IF NOT EXISTS stripe_topups (
+            id               INTEGER PRIMARY KEY AUTOINCREMENT,
+            created_at       TEXT    NOT NULL DEFAULT (datetime('now')),
+            session_id       TEXT    NOT NULL UNIQUE,
+            amount_usd_cents INTEGER NOT NULL,
+            tax_usd_cents    INTEGER NOT NULL DEFAULT 0,
+            sats_credited    INTEGER NOT NULL
+        )
+    """)
     await db.commit()
 
 
@@ -256,6 +266,48 @@ async def list_sessions(limit: int = 50) -> list[dict]:
         (limit,),
     )
     return [dict(r) for r in rows]
+
+
+async def credit_demo_funded_sats(amount_sats: int) -> None:
+    """Raise the demo wallet's funded balance by amount_sats (see l402.get_wallet_balance)."""
+    db = await get_db()
+    await db.execute(
+        "INSERT OR IGNORE INTO settings(key, value) VALUES(?, ?)",
+        ("demo_funded_sats", "0"),
+    )
+    await db.execute(
+        "UPDATE settings SET value = CAST(CAST(value AS INTEGER) + ? AS TEXT) WHERE key = ?",
+        (amount_sats, "demo_funded_sats"),
+    )
+    await db.commit()
+
+
+async def stripe_session_processed(session_id: str) -> bool:
+    """Check if a Stripe Checkout Session has already been credited (webhook dedup guard)."""
+    db = await get_db()
+    rows = await db.execute_fetchall(
+        "SELECT 1 FROM stripe_topups WHERE session_id = ?", (session_id,)
+    )
+    return len(rows) > 0
+
+
+async def record_stripe_topup(
+    *,
+    session_id: str,
+    amount_usd_cents: int,
+    tax_usd_cents: int,
+    sats_credited: int,
+) -> None:
+    db = await get_db()
+    await db.execute(
+        """
+        INSERT INTO stripe_topups (session_id, amount_usd_cents, tax_usd_cents, sats_credited)
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT(session_id) DO NOTHING
+        """,
+        (session_id, amount_usd_cents, tax_usd_cents, sats_credited),
+    )
+    await db.commit()
 
 
 async def get_transactions(limit: int = 50) -> list[dict]:

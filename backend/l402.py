@@ -284,21 +284,9 @@ async def create_receive_invoice(amount_sats: int | None = None) -> dict:
     """
     if DEMO_MODE:
         result = _demo_invoice(amount_sats)
-        # Auto-credit the demo balance by reducing total spent (no-op since
-        # balance = DEMO_BALANCE_SATS - spent; funding just raises the ceiling)
-        # Store the funded amount so balance goes up
         if amount_sats:
-            from backend.db import get_db
-            db = await get_db()
-            await db.execute(
-                "INSERT OR IGNORE INTO settings(key, value) VALUES(?, ?)",
-                ("demo_funded_sats", "0"),
-            )
-            await db.execute(
-                "UPDATE settings SET value = CAST(CAST(value AS INTEGER) + ? AS TEXT) WHERE key = ?",
-                (amount_sats, "demo_funded_sats"),
-            )
-            await db.commit()
+            from backend.db import credit_demo_funded_sats
+            await credit_demo_funded_sats(amount_sats)
         return result
 
     cmd = [*MDK_CMD, "receive"]
