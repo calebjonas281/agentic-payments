@@ -4,9 +4,9 @@ import json
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from sse_starlette.sse import EventSourceResponse
@@ -19,6 +19,7 @@ from backend.budget import (
     get_per_tx_limit,
     get_remaining_budget,
 )
+from backend.config import STRIPE_PUBLISHABLE_KEY
 from backend.db import (
     close_db,
     get_db,
@@ -30,6 +31,11 @@ from backend.db import (
     set_setting,
 )
 from backend.l402 import L402Error, create_receive_invoice, get_wallet_balance
+from backend.stripe_payments import (
+    StripeError,
+    create_topup_checkout_session,
+    handle_webhook_event,
+)
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 _FRONTEND_DIR = _PROJECT_ROOT / "frontend"
@@ -151,6 +157,36 @@ async def wallet_receive_endpoint(req: ReceiveRequest):
         return result
     except L402Error as e:
         return {"error": str(e)}
+
+
+@app.get("/stripe/config")
+async def stripe_config_endpoint():
+    """Expose the Stripe publishable key to the frontend."""
+    return {"publishable_key": STRIPE_PUBLISHABLE_KEY}
+
+
+class CardFundRequest(BaseModel):
+    amount_usd: float
+
+
+@app.post("/wallet/fund/card")
+async def wallet_fund_card_endpoint(req: CardFundRequest):
+    """Create a Stripe Checkout Session to top up the wallet with a card."""
+    try:
+        return await create_topup_checkout_session(req.amount_usd)
+    except StripeError as e:
+        return {"error": str(e)}
+
+
+@app.post("/stripe/webhook")
+async def stripe_webhook_endpoint(request: Request):
+    """Receive Stripe webhook events and credit the wallet on completed checkouts."""
+    payload = await request.body()
+    sig_header = request.headers.get("stripe-signature", "")
+    try:
+        return await handle_webhook_event(payload, sig_header)
+    except StripeError as e:
+        return PlainTextResponse(str(e), status_code=400)
 
 
 @app.get("/settings/budget")
